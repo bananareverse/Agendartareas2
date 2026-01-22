@@ -10,58 +10,60 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
+//Intermediario de la lista de tareas y la pantalla.
+public class Tareasfuncion extends RecyclerView.Adapter<Tareasfuncion.CajaTarea> {
 
-public class Tareasfuncion extends RecyclerView.Adapter<Tareasfuncion.TaskViewHolder> {
-
+    //Aquí se guardan las tareas del archivo Task
     private List<Task> taskList;
-
+    //Recibe la tarea el adaptador
     public Tareasfuncion(List<Task> taskList) {
         this.taskList = taskList;
     }
 
-    private void updateStroke(TextView tv, boolean isCompleted) {
+    //Nomas hace subrayar cuando es completada la actividad, con el getpaintflags
+    private void subrayado(TextView tv, boolean isCompleted) {
         if (isCompleted) {
-            // Añade el efecto de tachado
             tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         } else {
-            // Quita el efecto (lo deja normal)
             tv.setPaintFlags(tv.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
         }
     }
 
-    // --- AQUÍ VAN LOS MÉTODOS DEL JEFE (ADAPTER) ---
-
+    //Se crea la vista de las tablas, crea las que pide digamos hace 5 pero todavia no pone los datos en ella.
     @NonNull
     @Override
-    public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public CajaTarea onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        //hace el XML en una vista real
         View view = LayoutInflater.from(parent.getContext())
+                //hace aqui que si la pantalla solo soloprta 4 pestanas de tareas entonces al hacer scroll, la tarea 1 se convierte en la 5, la 2 en la 6 y asi.
                 .inflate(R.layout.tablita_task, parent, false);
-        return new TaskViewHolder(view);
+        return new CajaTarea(view);
     }
-
+    //
     @Override
-    public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull CajaTarea holder, int position) {
+        //Obtienes la tarea correcta según la posición.
         Task task = taskList.get(position);
 
-        holder.tvTitle.setText(task.getTitle());
-        holder.tvDate.setText(task.getDate());
+        holder.textoTarea.setText(task.getTitle());
 
-        // 1. Quitamos el listener para evitar errores al reciclar la vista
-        holder.cbCompleted.setOnCheckedChangeListener(null);
+        // RecyclerView reutiliza vistas, no intenciones.
+        //Si no limpias todo, heredas el pasado.
+        holder.checkListo.setOnCheckedChangeListener(null);
 
         // 2. Marcamos el checkbox según el estado de la tarea
-        holder.cbCompleted.setChecked(task.isCompleted());
+        holder.checkListo.setChecked(task.isCompleted());
 
         // 3. Aplicamos el tachado según el estado inicial
-        updateStroke(holder.tvTitle, task.isCompleted());
+        subrayado(holder.textoTarea, task.isCompleted());
 
         // 4. Escuchamos cuando el usuario hace clic
-        holder.cbCompleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        holder.checkListo.setOnCheckedChangeListener((buttonView, isChecked) -> {
             // Actualizamos el dato en la lista
             task.setCompleted(isChecked);
 
             // ¡Actualizamos el estilo visual de inmediato!
-            updateStroke(holder.tvTitle, isChecked);
+            subrayado(holder.textoTarea, isChecked);
         });
     }
 
@@ -70,17 +72,24 @@ public class Tareasfuncion extends RecyclerView.Adapter<Tareasfuncion.TaskViewHo
         return taskList.size();
     }
 
-    // --- AQUÍ EMPIEZA EL AYUDANTE (VIEWHOLDER) ---
-    public static class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle;
-        TextView tvDate;
-        CheckBox cbCompleted;
+    // Es el molde donde se crea la vista.
+    public static class CajaTarea extends RecyclerView.ViewHolder {
+        TextView textoTarea;
+        CheckBox checkListo;
 
-        public TaskViewHolder(@NonNull View itemView) {
+        public CajaTarea(@NonNull View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvTitle);
-            tvDate = itemView.findViewById(R.id.tvDate);
-            cbCompleted = itemView.findViewById(R.id.cbCompleted);
+            textoTarea = itemView.findViewById(R.id.tvTitle);
+            checkListo = itemView.findViewById(R.id.cbCompleted);
         }
     }
+
+
+    //XML define la fila
+    //
+    //ViewHolder conecta variables con los id del XML
+    //
+    //Adapter mete datos en esas variables
+    //
+    //RecyclerView reutiliza el mismo molde
 }

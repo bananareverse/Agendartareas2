@@ -1,6 +1,5 @@
 package com.ida.actividad03android2026;
 
-// Estas son las "piezas" que necesitamos traer
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,77 +12,69 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-// 1. IMPORTANTE: Agregamos 'extends AppCompatActivity'
+// Esta es la pantalla principal de tu app, donde esta todo implmentado XML, java, etc.
 public class MainActivityJava extends AppCompatActivity {
+
+    //Son las variables globales:
+    // rvTasks → donde se muestran las tareas
+    // adapter → el intermediario entre datos y pantalla
+    // listaDatos → la lista real de tareas (los datos)
+    // TituloTarea → donde escribes la tarea
+    // botonAgregar → botón para agregar
 
     private RecyclerView rvTasks;
     private Tareasfuncion adapter;
-    private List<Task> taskList;
-    private EditText etTaskTitle;
-    private Button btnAdd;
+    private List<Task> listaDatos;
+    private EditText TituloTarea;
+    private Button botonAgregar;
 
-
-    // 2. Este es el "Capítulo 1" (onCreate)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 3. Conectamos con el diseño XML
+        // Se carga el layout con el mainActivity
         setContentView(R.layout.activity_main);
 
-        // 4. Ahora sí, inicializamos la lista
-        taskList = new ArrayList<>();
-        taskList.add(new Task(1, "Estudiar Java", "20/01/26", false));
-        taskList.add(new Task(2, "Hacer el Adapter", "21/01/26", true));
-
-        // 5. Configuramos el RecyclerView
+        // Se crea la lista
+        listaDatos = new ArrayList<>();
+        // se pone el recycle de forma vertical
         rvTasks = findViewById(R.id.rvTasks);
         rvTasks.setLayoutManager(new LinearLayoutManager(this));
+        //Conecta el input y el boton
+        TituloTarea = findViewById(R.id.etTaskTitle);
+        botonAgregar = findViewById(R.id.btnAdd);
 
-        etTaskTitle = findViewById(R.id.etTaskTitle);
-        btnAdd = findViewById(R.id.btnAdd);
+        //Aqui pone el boton, obtiene el texto y lo pone en la lista
+        botonAgregar.setOnClickListener(v -> {
+            String title = TituloTarea.getText().toString().trim();
 
-        btnAdd.setOnClickListener(v -> {
-            // 1. Obtenemos el texto que escribió el usuario
-            String title = etTaskTitle.getText().toString().trim();
-
-            // 2. Validamos que no esté vacío
             if (!title.isEmpty()) {
-                // 3. Creamos una nueva tarea
-                // Por ahora inventamos el ID y la fecha
-                Task newTask = new Task(taskList.size() + 1, title, "20/01/26", false);
+                Task newTask = new Task(listaDatos.size() + 1, title, false);
 
-                // 4. La añadimos a nuestra lista
-                taskList.add(newTask);
+                listaDatos.add(newTask);
 
-                // 5. ¡AVISAMOS AL ADAPTER! (Esto es lo más importante)
-                // Le decimos que se insertó un elemento al final
-                adapter.notifyItemInserted(taskList.size() - 1);
-
-                //6. Limpiamos el cuadrito de texto
-                etTaskTitle.setText("");
-
-                // 7. Hacemos scroll automático hasta el final para ver la nueva tarea
-                rvTasks.scrollToPosition(taskList.size() - 1);
+                // avisa al adaptador por que se agrego una tarea
+                adapter.notifyItemInserted(listaDatos.size() - 1);
+                TituloTarea.setText("");
+                rvTasks.scrollToPosition(listaDatos.size() - 1);
             }
         });
 
-        // 5. Función para borrar deslizando
+        // Aqui se hace todo lo de borrar, deslizandose a la izquierda o derecha
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 return false; // No usamos mover arriba/abajo
             }
 
+            //Checa si se dezliozo y borra la posicion y le dice al adaptador
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                // Obtenemos la posición del elemento deslizado
+
                 int position = viewHolder.getAdapterPosition();
 
-                // Lo borramos de la lista
-                taskList.remove(position);
+                listaDatos.remove(position);
 
-                // Avisamos al adapter que se eliminó una fila
                 adapter.notifyItemRemoved(position);
             }
         };
@@ -94,8 +85,8 @@ public class MainActivityJava extends AppCompatActivity {
 
                 //
 
-        // 6. Creamos el adapter y lo conectamos
-        adapter = new Tareasfuncion(taskList);
+        // Aquí está la caja con los datos (adaptadro) y se conecta con el recycle
+        adapter = new Tareasfuncion(listaDatos);
         rvTasks.setAdapter(adapter);
     }
 }
